@@ -7,7 +7,7 @@
   git add .
   git commit -m "Initial deploy: HealthTrack w/ Supabase"
   git branch -M main
-  git remote add origin https://github.com/AbhayPratapSingh1234/healthtrack-app.git
+git remote set-url origin https://github.com/AbhayPratapSingh1234/healthtrack-app.git
   git push -u origin main
   ```
 
