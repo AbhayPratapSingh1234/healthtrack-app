@@ -1,0 +1,22 @@
+project_id = "migbmlxdptbnnxluhtwy"
+
+[functions.generate-recommendations]
+verify_jwt = false
+
+[functions.health-chatbot]
+verify_jwt = false
+
+[functions.health-suggestions]
+verify_jwt = false
+
+[functions.generate-assessment-report]
+verify_jwt = false
+
+[functions.analyze-health-report]
+verify_jwt = false
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false

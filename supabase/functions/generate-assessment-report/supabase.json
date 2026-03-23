@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "generate-assessment-report": {
+      "entrypoint": "openrouter-index.ts"
+    }
+  }
+}
