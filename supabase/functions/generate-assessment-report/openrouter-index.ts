@@ -48,7 +48,7 @@ serve(async (req) => {
   try {
     const API_KEY = Deno.env.get("OPENROUTER_API_KEY") || Deno.env.get("OPENAI_API_KEY");
     const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    const MODEL = "arcee-ai/trinity-large-preview:free";
+    const MODEL = "openai/gpt-oss-120b:free";
     
     if (!API_KEY) {
       throw new Error("OPENROUTER_API_KEY or OPENAI_API_KEY missing");
