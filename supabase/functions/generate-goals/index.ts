@@ -20,7 +20,7 @@ serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-120b:free",
+        model: "nvidia/nemotron-3-super-120b-a12b:free",
         messages: [
           {
             role: "system",
