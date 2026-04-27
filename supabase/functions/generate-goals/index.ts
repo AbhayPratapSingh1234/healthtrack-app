@@ -20,7 +20,7 @@ serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-20b:free",
+        model: "baidu/qianfan-ocr-fast:free",
         messages: [
           {
             role: "system",
