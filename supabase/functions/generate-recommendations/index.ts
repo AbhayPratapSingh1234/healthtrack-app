@@ -30,7 +30,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "stepfun/step-3.5-flash:free",
+        model: "baidu/qianfan-ocr-fast:free",
         messages: [
           {
             role: "system",
