@@ -20,7 +20,7 @@ serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemma-3-27b-it:free",
+        model: "nousresearch/hermes-3-llama-3.1-405b:free",
         messages: [
           {
             role: "system",
