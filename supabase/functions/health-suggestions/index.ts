@@ -39,7 +39,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemma-3-4b-it:free",
+        model: "tencent/hy3-preview:free",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: input || "suggest common options" }
