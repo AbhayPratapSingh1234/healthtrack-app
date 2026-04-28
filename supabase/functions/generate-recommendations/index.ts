@@ -32,7 +32,7 @@ serve(async (req) => {
         "X-Title": "HealthTrack",
       },
       body: JSON.stringify({
-        model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+        model: "tencent/hy3-preview:free",
         messages: [
           {
             role: "system",
