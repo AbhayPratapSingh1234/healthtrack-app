@@ -32,7 +32,7 @@ serve(async (req) => {
         "X-Title": "HealthTrack",
       },
       body: JSON.stringify({
-        model: "tencent/hy3-preview:free",
+        model: "liquid/lfm-2.5-1.2b-thinking:free",
         messages: [
           {
             role: "system",
