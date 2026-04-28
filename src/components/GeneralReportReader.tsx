@@ -7,6 +7,7 @@ import { FileUp, Send, X, Sparkles, Scan, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -119,85 +120,24 @@ export const GeneralReportReader = () => {
         textContent = `Document: ${fileName} (Type: ${fileType})`;
       }
 
-      // List of models to try in order
-      const models = [
-        "qwen/qwen2.5-vl-32b-instruct:free",
-        "mistralai/mistral-small-3.2-24b-instruct:free",
-        "nvidia/nemotron-nano-12b-v2-vl:free"
-      ];
+      // Call Supabase Edge Function for radiology analysis
+      const { data, error } = await supabase.functions.invoke("analyze-radiology-report", {
+        body: {
+          textContent,
+          fileName,
+          fileType,
+        },
+      });
 
-      let analysis = "";
-      let success = false;
-
-      // Try each model until one succeeds
-      for (const model of models) {
-        try {
-          console.log(`Trying model: ${model}`);
-
-          const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Authorization": "Bearer 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",
-              "HTTP-Referer": window.location.origin,
-              "X-Title": "HealthTrack",
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              "model": model,
-              "messages": [
-                {
-                  "role": "system",
-                  "content": "You are a specialized Radiology AI Analyst focusing on X-ray and body imaging analysis. Your expertise is in identifying physical harms, diseases, and abnormalities from radiological scans (X-rays, CT scans, MRI, ultrasound). ALWAYS start your response with the PHYSICAL ABNORMALITIES section first, then continue with other sections. Focus on anatomical findings, pathological conditions, and structural abnormalities. Use clear headings and highlight critical radiological findings. Always format the comparison as a markdown table with columns: Anatomical Region, Normal Appearance, Current Finding, Severity/Impact. Do not mention that you cannot analyze images or documents - provide detailed radiological analysis focusing on physical harms and diseases.",
-                },
-                {
-                  "role": "user",
-                  "content": `Please analyze this radiological document and provide a structured analysis focusing on X-ray and body imaging:\n\n${textContent}\n\n**Analysis Structure:**\n1. **PHYSICAL ABNORMALITIES** - List any physical harms, diseases, or abnormalities identified from the imaging (use PHYSICAL ABNORMALITIES heading)\n2. **Comparison Table** - Create a detailed comparison table with columns: Anatomical Region, Normal Appearance, Current Finding, Severity/Impact\n3. **Recommendations** - Specific recommendations for follow-up\n4. **Actionable Suggestions** - Next steps for the user\n\n**Table Format Example:**\n| Anatomical Region | Normal Appearance | Current Finding | Severity/Impact |\n|-------------------|-------------------|-----------------|----------------|\n| Lung Fields | Clear, no opacities | [Current finding] | [Description of severity] |\n\n**Important:** Start with the PHYSICAL ABNORMALITIES section at the top and use PHYSICAL ABNORMALITIES as the heading (without #### symbols). Focus on identifying fractures, tumors, infections, organ damage, and other physical abnormalities.`,
-                },
-              ],
-            }),
-          });
-
-          if (!response.ok) {
-            if (response.status === 429) {
-              console.log(`Rate limit exceeded for ${model}, trying next model...`);
-              continue; // Try next model
-            }
-            if (response.status === 402) {
-              console.log(`Payment required for ${model}, trying next model...`);
-              continue; // Try next model
-            }
-            const errorText = await response.text();
-            console.error(`Error with ${model}:`, response.status, errorText);
-            continue; // Try next model
-          }
-
-          const data = await response.json();
-          const responseContent = data.choices[0].message.content;
-
-          // Check if the response indicates inability to analyze images/documents
-          if (responseContent.includes("unable to analyze images") ||
-              responseContent.includes("unable to analyze documents") ||
-              responseContent.includes("I'm unable to analyze") ||
-              responseContent.includes("I cannot analyze images") ||
-              responseContent.includes("I cannot analyze documents")) {
-            console.log(`Model ${model} returned inability message, trying next model...`);
-            continue; // Try next model
-          }
-
-          analysis = responseContent;
-          success = true;
-          console.log(`Success with model: ${model}`);
-          break; // Exit loop on success
-
-        } catch (modelError: unknown) {
-          console.error(`Network error with ${model}:`, modelError instanceof Error ? modelError.message : "Unknown error");
-          continue; // Try next model
-        }
+      if (error) {
+        throw new Error(error.message || "Failed to analyze document");
       }
 
-      if (!success) {
-        throw new Error("All AI models failed. Please try again later.");
+      if (!data?.analysis) {
+        throw new Error("Invalid response from analysis service");
       }
+
+      const analysis = data.analysis;
 
       setMessages((prev) => [...prev, {
         role: "assistant",
@@ -483,3 +423,4 @@ export const GeneralReportReader = () => {
     </Card>
   );
 };
+
