@@ -28,9 +28,11 @@ serve(async (req) => {
       headers: {
         Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://healthtrack.app",
+        "X-Title": "HealthTrack",
       },
       body: JSON.stringify({
-        model: "baidu/qianfan-ocr-fast:free",
+        model: "tencent/hy3-preview:free",
         messages: [
           {
             role: "system",
@@ -45,6 +47,12 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized. Please check your OpenRouter API key." }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limits exceeded, please try again later." }),
@@ -53,8 +61,14 @@ serve(async (req) => {
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "Payment required, please add funds to your Lovable AI workspace." }),
+          JSON.stringify({ error: "Payment required, please add credits to your OpenRouter account." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 400) {
+        return new Response(
+          JSON.stringify({ error: "Bad request. Please check your input data." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       const errorText = await response.text();
