@@ -32,7 +32,7 @@ serve(async (req) => {
         "X-Title": "HealthTrack",
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-20b:free",
+        model: "google/gemma-4-31b-it:free",
         messages: [
           {
             role: "system",
