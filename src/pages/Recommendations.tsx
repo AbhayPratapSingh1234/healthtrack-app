@@ -122,51 +122,24 @@ const Recommendations = () => {
         .eq("user_id", user.id)
         .eq("status", "active");
 
-      // Build context for AI
-      const context = buildHealthContext(assessment, logs || [], goals || []);
-
-      // Call OpenRouter API directly
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-"Authorization": "Bearer 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",
-          "HTTP-Referer": window.location.origin,
-          "X-Title": "HealthTrack",
-          "Content-Type": "application/json"
+      // Call Supabase Edge Function to generate recommendations
+      const { data, error } = await supabase.functions.invoke("generate-recommendations", {
+        body: {
+          healthData: assessment,
+          logs: logs || [],
+          goals: goals || [],
         },
-        body: JSON.stringify({
-"model": "stepfun/step-3.5-flash:free",
-          "messages": [
-            {
-              "role": "system",
-              "content": "You are a professional health advisor. Provide personalized, actionable health recommendations based on the user's health data. Focus on diet, exercise, and lifestyle changes. Be supportive and encouraging. Keep recommendations specific and practical.",
-            },
-            {
-              "role": "user",
-              "content": context,
-            },
-          ],
-        }),
       });
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error("Rate limits exceeded, please try again later.");
-        }
-        if (response.status === 402) {
-          throw new Error("Payment required, please add funds to your OpenRouter account.");
-        }
-        const errorText = await response.text();
-        console.error("AI gateway error:", response.status, errorText);
-        throw new Error(`AI gateway error: ${errorText || response.status}`);
+      if (error) {
+        throw new Error(error.message || "Failed to generate recommendations");
       }
 
-      const data = await response.json();
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        console.error("Invalid response structure:", data);
-        throw new Error("Invalid AI response structure");
+      if (!data?.recommendations) {
+        throw new Error("Invalid response from recommendation service");
       }
-      const recommendations = data.choices[0].message.content;
+
+      const recommendations = data.recommendations;
 
       setRecommendations(recommendations);
     } catch (error: any) {
